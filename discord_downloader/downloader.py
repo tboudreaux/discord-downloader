@@ -12,6 +12,18 @@ from discord_downloader.utils import (
     none_or_list,
 )
 
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print('Logged on as', self.user)
+
+    async def on_message(self, message):
+        # don't respond to ourselves
+        if message.author == self.user:
+            return
+
+        if message.content == 'ping':
+            await message.channel.send('pong')
+
 
 def main(
     client,
@@ -143,7 +155,8 @@ def main(
             print(f"\n**** Dry run! 0 of {total} files saved!")
         else:
             print(f"\n**** Saved {total} files to {output_dir}")
-        await client.logout()  #
+        print(type(client))
+        await client.close()  #
 
     @client.event
     async def on_disconnect(zipped=zipped, dry_run=dry_run, output_dir=output_dir):
@@ -163,7 +176,10 @@ if __name__ == "__main__":
     parser = base_parser
     args = parser.parse_args()
 
-    client = discord.Client()
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    client = discord.Client(intents=intents)
 
     main(
         client,
